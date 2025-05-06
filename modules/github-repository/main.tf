@@ -56,3 +56,39 @@ resource "github_branch_protection" "branch_protection" {
   
   enforce_admins = each.value.enforce_admins
 }
+
+resource "null_resource" "repo_tags" {
+  for_each = var.tags
+  
+  depends_on = [github_repository.repo]
+  
+  triggers = {
+    tag_name    = each.key
+    tag_message = each.value
+    repo_name   = github_repository.repo.name
+  }
+
+  provisioner "local-exec" {
+    command = <<-EOT
+      if [ ! -d "temp_${github_repository.repo.name}" ]; then
+        git clone https://${var.github_token}@github.com/${var.github_owner}/${github_repository.repo.name}.git temp_${github_repository.repo.name}
+      fi
+      cd temp_${github_repository.repo.name}
+      git tag -a ${each.key} -m "${each.value}"
+      git push origin ${each.key}
+    EOT
+  }
+}
+
+# Clean up at the end
+resource "null_resource" "cleanup" {
+  depends_on = [null_resource.repo_tags]
+  
+  triggers = {
+    repo_name = github_repository.repo.name
+  }
+
+  provisioner "local-exec" {
+    command = "rm -rf temp_${github_repository.repo.name}"
+  }
+}
