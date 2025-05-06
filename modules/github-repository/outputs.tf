@@ -17,3 +17,8 @@ output "repository_id" {
   description = "The ID of the repository"
   value       = github_repository.repo.repo_id
 }
+
+output "tags" {
+  description = "The tags that were created"
+  value       = keys(var.tags)
+}

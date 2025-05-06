@@ -109,3 +109,20 @@ variable "branch_protections" {
   }))
   default = {}
 }
+
+variable "github_token" {
+  description = "GitHub personal access token"
+  type        = string
+  sensitive   = true
+}
+
+variable "github_owner" {
+  description = "GitHub owner (organization or user)"
+  type        = string
+}
+
+variable "tags" {
+  description = "Map of tags to create (tag_name = tag_message)"
+  type        = map(string)
+  default     = {}
+}
